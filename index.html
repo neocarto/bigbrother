@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Smile, you're on camera!</title>
+<script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/map.css">
+<style></style>
+</head>
+<body>
+    <div id="map" class="svg-container"></div>
+    <script type="text/javascript">
+
+    var w = 800;
+    var h = 900;
+
+    var svg = d3.select("div#map").append("svg")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("class","back")
+    .attr("viewBox", "0 0 " + w + " " + h)
+    .classed("svg-content", true);
+
+    var projection = d3.geoOrthographic()
+    .scale(350)
+    .translate([800 / 2, 990 / 2])
+    .clipAngle(90) // without this options countries on the other side are visible
+    .precision(.1)
+    .rotate([0,0,0]);
+
+    var path = d3.geoPath().projection(projection);
+
+// load layers and data
+var worldmap = d3.json("data/world.geojson");
+var iomdata = d3.json("data/cams.geojson");
+var graticule = d3.geoGraticule().step([5, 5]);
+
+Promise.all([worldmap, iomdata]).then(function(values){
+ // draw map
+
+    // Botom layer ******************
+
+    var bottomlayer = svg.append("g").attr("id","bottomlayer");
+
+    var radialGradient = svg.append("defs")
+      .append("radialGradient")
+        .attr("id", "radial-gradient");
+    radialGradient.append("stop")
+       .attr("offset", "50%")
+       .attr("stop-color", "#468c8b");
+    radialGradient.append("stop")
+      .attr("offset", "100%")
+        .attr("stop-color", "#285c5b");
+
+    var sphere = bottomlayer.append("path")
+        .datum(graticule.outline)
+        .style("fill", "url(#radial-gradient)")
+        .attr("class", "sphere")
+        .attr("d", path)
+
+    bottomlayer.append("path")
+      .datum(graticule)
+      .attr("class", "graticule")
+      .attr("d", path);
+
+    var filter = svg.append("defs")
+      .append("filter")
+      .attr("id", "blur")
+      .append("feGaussianBlur")
+      .attr("stdDeviation", 5);
+    bottomlayer.append("path")
+      .datum(graticule.outline)
+      .attr("class", "graticuleOutline")
+      .attr("d", path)
+      .attr("filter", "url(#blur)");
+
+    bottomlayer.selectAll("path")
+        .data(values[0].features)
+        .enter()
+        .append("path")
+        .attr("class","countries")
+        .attr("d", path);
+
+  // CAMERAS ******************
+
+    var datalayer = svg.append("g").attr("id","datalayer");
+    datalayer.selectAll("path")
+        .data(values[1].features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("class","cams")
+        .attr("d", path.pointRadius(2));
+
+          // INTERACTIVITY & ROTATION (DRAG)******************
+
+            const λ = d3.scaleLinear()
+              .domain([0, w])
+              .range([-180, 180]);
+
+            const φ = d3.scaleLinear()
+              .domain([0, h])
+              .range([90, -90]);
+
+              var drag = d3.drag().subject(function() {
+                  var r = projection.rotate();
+                  return {
+                      x: λ.invert(r[0]),
+                      y: φ.invert(r[1])
+                  };
+              }).on("drag", function() {
+                  projection.rotate([λ(d3.event.x), φ(d3.event.y)]);
+
+                  svg.selectAll(".graticule")
+                      .datum(graticule)
+                      .attr("d", path);
+
+                  svg.selectAll(".countries")
+                      .attr("d", path);
+
+                      svg.selectAll(".cams")
+                          .attr("d", path);
+              });
+
+              svg.call(drag);
+
+
+              // TEXTES AND NOTES
+
+              var maptitle = "BIG BROTHER IS WATCHING YOU";
+              var maptitlesubtitle = "Each dot represents a video surveillance camera recorded in the OpenStreetMap database on July 29, 2019";
+              var number = "70,754 cameras worldwide";
+              var source = "Data: (c) OpenStreetMap contributors, ODbL 1.0. http://www.openstreetmap.org/copyright (key = 'man_made', value = 'surveillance')";
+              var basemap = "Basemap: Natural Earth. Free vector and raster map data. https://www.naturalearthdata.com";
+              var author = "Cartographic Design: Nicolas Lambert, 2019. https://neocarto.hypotheses.org";
+
+              var layout = svg.append("g").attr("id","layout");
+
+              var posx = 10; var posy = 95;
+              layout.append("text").text(maptitle)
+               .attr("x", posx).attr("y", posy)
+               .attr("class", "vintage1")
+               .attr("filter", "url(#blur)");
+               layout.append("text").text(maptitle)
+                .attr("x", posx).attr("y", posy)
+                .attr("class", "vintage2");
+
+                var posy = 116;
+                layout.append("text").text(maptitlesubtitle).attr("x", posx).attr("y", posy).attr("class", "subtitle");
+                var delta  = 12; var posy = 865;
+                var delta  = 12; var posy = 865;
+                layout.append("text").text(author).attr("x", posx).attr("y", posy).attr("class", "notes");
+                var posy = posy + delta;
+                layout.append("text").text(basemap).attr("x", posx).attr("y", posy).attr("class", "notes");
+                var posy = posy + delta;
+                layout.append("text").text(source).attr("x", posx).attr("y", posy).attr("class", "notes");
+                rectangle = layout.append("rect")
+                  .attr("x", 580).attr("y", 120).attr("width", 202).attr("height", 28).attr("fill","#468c8b");
+                layout.append("text").text(number).attr("x", 586).attr("y", 143).attr("class", "subtitle2");
+
+                layout.append("svg:image")
+                .attr('x',680)
+                .attr('y',160)
+                .attr('width', 120)
+                .attr("xlink:href","img/cam.svg");
+
+                layout.append("svg:image")
+                .attr('x',0)
+                .attr('y',130)
+                .attr('width', 165)
+                .attr("xlink:href","img/cam2.svg");
+
+                layout.append("svg:image")
+                .attr('x',0)
+                .attr('y',700)
+                .attr('width', 140)
+                .attr("xlink:href","img/cam3.svg");
+
+                layout.append("svg:image")
+                .attr('x',617)
+                .attr('y',730)
+                .attr('width', 185)
+                .attr("xlink:href","img/cam4.svg");
+
+
+
+                projection.rotate([-20, -40]);
+                svg.selectAll(".graticule")
+                    .datum(graticule)
+                    .attr("d", path);
+
+                svg.selectAll(".countries")
+                    .attr("d", path);
+
+                    svg.selectAll(".cams")
+                        .attr("d", path);
+    });
+
+
+</script>
+</body>
+</html>

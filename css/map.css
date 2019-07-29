@@ -1,0 +1,56 @@
+@import url(https://fonts.googleapis.com/css?family=Six+Caps);
+@import url(https://fonts.googleapis.com/css?family=Oswald:400|Open+Sans:700);
+
+#map {width:800px; height:800px}
+.graticule {fill:none ; stroke: white; stroke-width: .5px;  stroke-opacity: .5; stroke-dasharray: 2 }
+.countries {fill: #e3cc64 ; stroke-width: 0.4px; stroke : white}
+.sphere {fill: #285c5b; stroke: none}
+.back {background-color : #dbdaca}
+.cams {fill: black; stroke: black; stroke-width: 1.2px}
+.graticuleOutline {fill: none; stroke: black; stroke-width: 4px}
+
+.vintage2 {
+  font-family: 'Six Caps', sans-serif;
+  font-size: 99px;
+  letter-spacing: 8px;
+  line-height: 1;
+  margin: 0;
+  fill : #468c8b;
+  stroke : #468c8b;
+   stroke-width: 2px;
+}
+
+
+.vintage1 {
+  font-family: 'Six Caps', sans-serif;
+  font-size: 99px;
+  letter-spacing: 8px;
+  line-height: 1;
+  margin: 0;
+  fill : white;
+  stroke : white;
+  stroke-width: 4px;
+}
+
+.subtitle {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  line-height: 1;
+  margin: 0;
+  fill : #468c8b;
+}
+.subtitle2 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 19.7px;
+  line-height: 1;
+  margin: 0;
+  fill : #e3cc64;
+}
+
+.notes {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  line-height: 1;
+  margin: 0;
+  fill : #468c8b;
+}
